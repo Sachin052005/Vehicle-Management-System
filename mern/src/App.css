@@ -1,0 +1,14 @@
+{/*.background-image {
+    background-image: url('https://images.pexels.com/photos/358070/pexels-photo-358070.jpeg?cs=srgb&dl=automobile-automotive-car-358070.jpg&fm=jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    min-height: 100vh; /* Adjust this according to your needs */
+  }
+  
+  .toolbar {
+    background-color: rgba(0, 0, 0, 0.5); /* Adjust the opacity as needed */
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 20px;
+  } 
+  
