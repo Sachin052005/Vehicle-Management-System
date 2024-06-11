@@ -8,6 +8,7 @@ function AddVehicle() {
   const [model, setModel] = useState('');
   const [year, setYear] = useState('');
   const [editId, setEditId] = useState('');
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchVehicles();
@@ -15,7 +16,7 @@ function AddVehicle() {
 
   const fetchVehicles = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/vehicles');
+      const response = await axios.get('http://localhost:7000/vehicles');
       setVehicles(response.data.vehicles);
     } catch (error) {
       console.error('Error fetching vehicles: ', error);
@@ -24,11 +25,7 @@ function AddVehicle() {
 
   const addVehicle = async () => {
     try {
-      await axios.post('http://localhost:5000/vehicles', {
-        brand,
-        model,
-        year,
-      });
+      await axios.post('http://localhost:7000/vehicles', { brand, model, year });
       fetchVehicles();
       setBrand('');
       setModel('');
@@ -40,7 +37,7 @@ function AddVehicle() {
 
   const deleteVehicle = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/vehicles/${id}`);
+      await axios.delete(`http://localhost:7000/vehicles/${id}`);
       fetchVehicles();
     } catch (error) {
       console.error('Error deleting vehicle: ', error);
@@ -49,11 +46,7 @@ function AddVehicle() {
 
   const updateVehicle = async () => {
     try {
-      await axios.put(`http://localhost:5000/vehicles/${editId}`, {
-        brand,
-        model,
-        year,
-      });
+      await axios.put(`http://localhost:7000/vehicles/${editId}`, { brand, model, year });
       fetchVehicles();
       setBrand('');
       setModel('');
@@ -68,56 +61,47 @@ function AddVehicle() {
     setBrand(vehicle.brand);
     setModel(vehicle.model);
     setYear(vehicle.year);
-    setEditId(vehicle.id);
+    setEditId(vehicle._id);
   };
 
-  const [search, setsearch] = useState('');
   return (
     <div className="container-fluid background-image">
       <nav className="navbar navbar-expand-lg bg-body-tertiary">
-      <div className="container-fluid">
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <Link className="nav-link" to="/">
-                Home
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/addvehicle">
-                Add Vehicle
-              </Link>
-            </li>
-          </ul>
-          <form
-            className="d-flex"
-            role="search"
+        <div className="container-fluid">
+          <button
+            className="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
           >
-            <input
-              className="form-control me-2"
-              type="search"
-              placeholder="Search by brand"
-              aria-label="Search"
-              onChange={e => {setsearch(e.target.value)}}
-            />
-            <button className="btn btn-primary" type="submit">
-              Search
-            </button>
-          </form>
+            <span className="navbar-toggler-icon"></span>
+          </button>
+          <div className="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+              <li className="nav-item">
+                <Link className="nav-link" to="/">Home</Link>
+              </li>
+              <li className="nav-item">
+                <Link className="nav-link" to="/addvehicle">Add Vehicle</Link>
+              </li>
+            </ul>
+            <form className="d-flex">
+              <input
+                className="form-control me-2"
+                type="search"
+                placeholder="Search by brand"
+                aria-label="Search"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <button className="btn btn-primary" type="button">Search</button>
+            </form>
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
 
       <h1 className="my-4 text-center">Vehicle Management System</h1>
       <div className="row justify-content-center">
@@ -148,13 +132,9 @@ function AddVehicle() {
                   className="form-control mb-2"
                 />
                 {editId ? (
-                  <button onClick={updateVehicle} className="btn btn-primary custom-btn">
-                    Update
-                  </button>
+                  <button onClick={updateVehicle} className="btn btn-primary custom-btn">Update</button>
                 ) : (
-                  <button onClick={addVehicle} className="btn btn-primary custom-btn">
-                    Add Vehicle
-                  </button>
+                  <button onClick={addVehicle} className="btn btn-primary custom-btn">Add Vehicle</button>
                 )}
               </div>
             </div>
@@ -163,24 +143,19 @@ function AddVehicle() {
       </div>
       <div className="row justify-content-center mt-4">
         {vehicles.map((vehicle) => (
-          (vehicle.brand.toLowerCase().includes(search.toLowerCase())) ?
-          (
-            <div key={vehicle.id} className="col-md-4 mb-4">
-            <div className="card">
-              <div className="card-body">
-                <h5 className="card-title">{vehicle.brand}</h5>
-                <p className="card-text">Model: {vehicle.model}</p>
-                <p className="card-text">Year: {vehicle.year}</p>
-                <button onClick={() => deleteVehicle(vehicle.id)} className="btn btn-danger custom-btn">
-                  Delete
-                </button>
-                <button onClick={() => handleEdit(vehicle)} className="btn btn-primary custom-btn">
-                  Edit
-                </button>
+          vehicle.brand.toLowerCase().includes(search.toLowerCase()) && (
+            <div key={vehicle._id} className="col-md-4 mb-4">
+              <div className="card">
+                <div className="card-body">
+                  <h5 className="card-title">{vehicle.brand}</h5>
+                  <p className="card-text">Model: {vehicle.model}</p>
+                  <p className="card-text">Year: {vehicle.year}</p>
+                  <button onClick={() => deleteVehicle(vehicle._id)} className="btn btn-danger custom-btn">Delete</button>
+                  <button onClick={() => handleEdit(vehicle)} className="btn btn-primary custom-btn">Edit</button>
+                </div>
               </div>
             </div>
-          </div>
-          ): (null)
+          )
         ))}
       </div>
     </div>

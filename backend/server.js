@@ -1,55 +1,57 @@
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
+require('dotenv').config();
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 7000;
 
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
-  app.use(cors());
+const MONGODB_URL = process.env.MONGODB_URL;
 
-let vehicles = [
-  {
-    id: 1,
-    brand: "Toyota",
-    model: "Camry",
-    year: 2020,
-  },
-];
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-// Routes for CRUD operations
+// Connect to MongoDB
+mongoose.connect(MONGODB_URL, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Could not connect to MongoDB:', err));
 
-app.get("/vehicles", (req, res) => {
+// Define a schema and model
+const vehicleSchema = new mongoose.Schema({
+  brand: String,
+  model: String,
+  year: Number,
+});
+
+const Vehicle = mongoose.model('Vehicle', vehicleSchema);
+
+// Routes
+app.get('/vehicles', async (req, res) => {
+  const vehicles = await Vehicle.find();
   res.json({ vehicles });
 });
 
-app.post("/vehicles", (req, res) => {
+app.post('/vehicles', async (req, res) => {
   const { brand, model, year } = req.body;
-  const id = vehicles.length + 1;
-  const newVehicle = { id, brand, model, year };
-  vehicles.push(newVehicle);
-  res.json({ success: true, vehicle: newVehicle });
+  const newVehicle = new Vehicle({ brand, model, year });
+  await newVehicle.save();
+  res.status(201).json(newVehicle);
 });
 
-app.put("/vehicles/:id", (req, res) => {
+app.delete('/vehicles/:id', async (req, res) => {
   const { id } = req.params;
-  const { brand, model, year } = req.body;
-  const index = vehicles.findIndex((vehicle) => vehicle.id === parseInt(id));
-  if (index !== -1) {
-    vehicles[index] = { id: parseInt(id), brand, model, year };
-    res.json({ success: true, vehicle: vehicles[index] });
-  } else {
-    res.status(404).json({ success: false, message: "Vehicle not found" });
-  }
+  await Vehicle.findByIdAndDelete(id);
+  res.status(204).send();
 });
 
-app.delete("/vehicles/:id", (req, res) => {
+app.put('/vehicles/:id', async (req, res) => {
   const { id } = req.params;
-  vehicles = vehicles.filter((vehicle) => vehicle.id !== parseInt(id));
-  res.json({ success: true });
+  const { brand, model, year } = req.body;
+  const updatedVehicle = await Vehicle.findByIdAndUpdate(id, { brand, model, year }, { new: true });
+  res.json(updatedVehicle);
 });
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server running on http://localhost:${port}`);
 });
